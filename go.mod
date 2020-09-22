@@ -1,4 +1,4 @@
-module github.com/snapp-ic-cloud-extensions/webhook_core
+module github.com/devops-simba/webhook_core
 
 go 1.14
 
