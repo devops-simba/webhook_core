@@ -10,11 +10,6 @@ import (
 
 // Webhook This interface represent a webhook
 type Webhook interface {
-	// Initialize
-	// this function will be called by main application after it parsed the flags to let
-	// plugin load its configuration
-	Initialize() error
-
 	// Name name of this webhook
 	Name() string
 	// Description of this webhook, this is required for log and like of that
