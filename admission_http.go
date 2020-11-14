@@ -232,8 +232,8 @@ func WriteAdmissionResponse(
 	} else if _, err := writer.Write(resp); err != nil {
 		log.Errorf("Failed to write response: %v", err)
 		http.Error(writer, "Failed to send response", http.StatusInternalServerError)
-	} else if log.V(10) {
-		log.Infof("Sent response: %v", string(resp))
+	} else {
+		log.V(10).Infof("Sent response: %v", string(resp))
 	}
 }
 
