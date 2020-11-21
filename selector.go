@@ -1,6 +1,7 @@
 package webhook_core
 
 import (
+	"github.com/devops-simba/helpers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,11 +24,11 @@ func IsMatch(object *metav1.ObjectMeta, selector *metav1.LabelSelector) bool {
 			ovalue, ok := object.Labels[expr.Key]
 			switch expr.Operator {
 			case metav1.LabelSelectorOpIn:
-				if !ok || !Contains(expr.Values, ovalue) {
+				if !ok || !helpers.ContainsString(expr.Values, ovalue) {
 					return false
 				}
 			case metav1.LabelSelectorOpNotIn:
-				if ok && Contains(expr.Values, ovalue) {
+				if ok && helpers.ContainsString(expr.Values, ovalue) {
 					return false
 				}
 			case metav1.LabelSelectorOpExists:

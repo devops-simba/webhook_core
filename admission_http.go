@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/devops-simba/helpers"
+
 	log "github.com/golang/glog"
 	admissionApi "k8s.io/api/admission/v1"
 	admissionApiBeta1 "k8s.io/api/admission/v1beta1"
@@ -240,7 +242,7 @@ func WriteAdmissionResponse(
 // InitializeRuntimeScheme initialize a runtime scheme
 // this is useful for adding schemes from different APIs(like openshift)
 func InitializeRuntimeScheme(partName string, updater func(*runtime.Scheme) error) error {
-	if !Contains(appliedSchemes, partName) {
+	if !helpers.ContainsString(appliedSchemes, partName) {
 		err := updater(Scheme)
 		if err != nil {
 			return err
