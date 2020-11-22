@@ -80,6 +80,14 @@ func NewReplacePatch(path string, value interface{}) PatchOperation {
 	}
 }
 
+// NewRemovePatch create a new `PatchOperation` for 'remove' operation
+func NewRemovePatch(path string) PatchOperation {
+	return PatchOperation{
+		Op:   "remove",
+		Path: path,
+	}
+}
+
 func updateItems(current map[string]string, added map[string]string, path string) []PatchOperation {
 	var patches []PatchOperation
 	for key, value := range added {
