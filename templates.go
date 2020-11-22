@@ -207,7 +207,7 @@ spec:
 		{{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
         - name: "{{ .Name }}"
           value: {{ Quote (Deref .DefaultValue) }}
-        {{- end }}{{ end }}{{ end }}
+        {{ end }}{{ end }}{{ end }}
   {{- if not .Insecure }}
       volumeMounts:
         - name: "{{ .Name }}-tls-certs"
