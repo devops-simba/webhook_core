@@ -176,19 +176,19 @@ var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderW
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-name: "{{ .Name }}"
-namespace: "{{ .Namespace }}"
-labels:
-app: "{{ .Name }}"
-spec:
-replicas: 1
-selector:
-matchLabels:
-  app: "{{ .Name }}"
-template:
-metadata:
+  name: "{{ .Name }}"
+  namespace: "{{ .Namespace }}"
   labels:
     app: "{{ .Name }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ .Name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Name }}"
 spec:
   {{ if (ne .RunAsUser 0) -}}
   securityContext:
@@ -222,35 +222,35 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-name: "{{ .ServiceName }}"
-namespace: "{{ .Namespace }}"
+  name: "{{ .ServiceName }}"
+  namespace: "{{ .Namespace }}"
 spec:
-selector:
-app: "{{ .Name }}"
-ports:
-- port: {{ .ServerPort }}
-  targetPort: "{{ .Name }}-api"
-{{if (ne 0 (len .MutatingWebhooks)) -}}
+  selector:
+    app: "{{ .Name }}"
+  ports:
+    - port: {{ .ServerPort }}
+      targetPort: "{{ .Name }}-api"
+  {{if (ne 0 (len .MutatingWebhooks)) -}}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-name: "{{ .Name }}"
+  name: "{{ .Name }}"
 webhooks:
-{{- range .MutatingWebhooks }}
-  {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "mutate") }}
-{{- end}}
+  {{- range .MutatingWebhooks }}
+    {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "mutate") }}
+  {{- end}}
 {{- end }}
 {{if (ne 0 (len .ValidatingWebhooks)) -}}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-name: "{{ .Name }}"
+  name: "{{ .Name }}"
 webhooks:
-{{- range .ValidatingWebhooks }}
-  {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "validate") }}
-{{- end }}
+  {{- range .ValidatingWebhooks }}
+    {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "validate") }}
+  {{- end }}
 {{- end }}
 `)
 
