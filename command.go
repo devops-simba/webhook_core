@@ -97,6 +97,7 @@ func ReadCommand(
 		panic("Invalid default command")
 	}
 
+	command.DefaultCommand = defaultCommand
 	command.BindToFlags(flag.CommandLine)
 	flag.Parse()
 
