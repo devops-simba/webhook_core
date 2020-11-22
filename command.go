@@ -73,8 +73,9 @@ func ReadCommand(
 	}
 
 	command := &CLICommand{
-		Webhooks:        webhooks,
-		ApplicationName: strings.Replace(helpers.ApplicationName, "_", "-", -1),
+		Webhooks:          webhooks,
+		SupportedCommands: make(map[string]CommandHandler),
+		ApplicationName:   strings.Replace(helpers.ApplicationName, "_", "-", -1),
 	}
 
 	for key, value := range supportedCommands {
