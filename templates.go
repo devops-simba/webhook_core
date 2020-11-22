@@ -189,35 +189,35 @@ spec:
     metadata:
       labels:
         app: "{{ .Name }}"
-spec:
-  {{ if (ne .RunAsUser 0) -}}
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: {{ .RunAsUser }}
-  {{ end -}}
-  containers:
-    - name: "server"
-      image: "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
-      imagePullPolicy: Always
-      ports:
-        - containerPort: {{ .ContainerPort }}
-          name: "{{ .Name }}-api"
-      env:
-        {{ range .AllHooks }}{{ range .Configurations }}{{ if (ne .DefaultValue nil) -}}
-		{{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
-        - name: "{{ .Name }}"
-          value: {{ Quote (Deref .DefaultValue) }}
-        {{ end }}{{ end }}{{ end }}
-  {{- if not .Insecure }}
-      volumeMounts:
+    spec:
+      {{ if (ne .RunAsUser 0) -}}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: {{ .RunAsUser }}
+      {{ end -}}
+      containers:
+        - name: "server"
+          image: "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .ContainerPort }}
+              name: "{{ .Name }}-api"
+          env:
+            {{ range .AllHooks }}{{ range .Configurations }}{{ if (ne .DefaultValue nil) -}}
+        {{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
+            - name: "{{ .Name }}"
+              value: {{ Quote (Deref .DefaultValue) }}
+            {{ end }}{{ end }}{{ end }}
+      {{- if not .Insecure }}
+          volumeMounts:
+            - name: "{{ .Name }}-tls-certs"
+              mountPath: "/run/secrets/{{ .Name }}"
+              readOnly: true
+      volumes:
         - name: "{{ .Name }}-tls-certs"
-          mountPath: "/run/secrets/{{ .Name }}"
-          readOnly: true
-  volumes:
-    - name: "{{ .Name }}-tls-certs"
-      secret:
-        secretName: "{{ .TlsSecretName }}"
-  {{- end }}
+          secret:
+            secretName: "{{ .TlsSecretName }}"
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service
