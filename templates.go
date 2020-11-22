@@ -199,7 +199,7 @@ spec:
             - "{{ .ContainerPort }}"
             {{ if not .Insecure -}}
             - "--cert"
-            - "/run/secrets/{{ .Name }}/tls.cert"
+            - "/run/secrets/{{ .Name }}/tls.crt"
             - "--key"
             - "/run/secrets/{{ .Name }}/tls.key"
             {{ else }}

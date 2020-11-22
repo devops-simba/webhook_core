@@ -223,7 +223,7 @@ func CreateDeployment(command *CLICommand) error {
 		BuildProxy:      command.BuildProxy,
 		LogLevel:        command.LogLevel,
 		Port:            command.Port,
-		CertificateFile: fmt.Sprintf("/run/secrets/%s/tls.cert", command.ApplicationName),
+		CertificateFile: fmt.Sprintf("/run/secrets/%s/tls.crt", command.ApplicationName),
 		PrivateKeyFile:  fmt.Sprintf("/run/secrets/%s/tls.key", command.ApplicationName),
 	})
 	if err != nil {
