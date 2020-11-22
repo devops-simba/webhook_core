@@ -11,13 +11,25 @@ import (
 	admissionRegistration "k8s.io/api/admissionregistration/v1"
 )
 
+func quote(value string) string {
+	return `"` + strings.ReplaceAll(strings.ReplaceAll(value, `\`, `\\`), `"`, `\"`) + `"`
+}
+
 var (
 	funcs = template.FuncMap{
 		"json":  json.Marshal,
 		"join":  strings.Join,
 		"deref": func(value *string) string { return *value },
-		"quote": func(value string) string {
-			return `"` + strings.ReplaceAll(strings.ReplaceAll(value, `\`, `\\`), `"`, `\"`) + `"`
+		"quote": quote,
+		"quoteAndJoin": func(values []string, sep string) string {
+			builder := &strings.Builder{}
+			for i := 0; i < len(values); i++ {
+				if i != 0 {
+					builder.WriteString(sep)
+				}
+				builder.WriteString(quote(values[i]))
+			}
+			return builder.String()
 		},
 		"joinOperations": func(operations []admissionRegistration.OperationType, sep string) string {
 			result := ""
