@@ -203,15 +203,11 @@ spec:
         - containerPort: {{ .ContainerPort }}
           name: "{{ .Name }}-api"
       env:
-        {{ range .AllHooks -}}
-        {{ range .Configurations -}}
-        {{ if (ne .DefaultValue nil) }}
+        {{ range .AllHooks }}{{ range .Configurations }}{{ if (ne .DefaultValue nil) -}}
 		{{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
         - name: "{{ .Name }}"
           value: {{ Quote (Deref .DefaultValue) }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
+        {{- end }}{{ end }}{{ end }}
   {{- if not .Insecure }}
       volumeMounts:
         - name: "{{ .Name }}-tls-certs"
