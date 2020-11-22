@@ -211,7 +211,12 @@ func WriteAdmissionResponse(
 	apiVersion string,
 	ar *admissionApi.AdmissionReview,
 	response *admissionApi.AdmissionResponse) {
-	responseAR := admissionApi.AdmissionReview{}
+	responseAR := admissionApi.AdmissionReview{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AdmissionReview",
+			APIVersion: apiVersion,
+		},
+	}
 	if response != nil {
 		responseAR.Response = response
 		if ar.Request != nil {
