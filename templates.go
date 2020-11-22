@@ -232,7 +232,7 @@ metadata:
   name: "{{ .ServiceName }}"
   namespace: "{{ .Namespace }}"
   labels:
-	app: "{{ .Name }}"
+    app: "{{ .Name }}"
 spec:
   selector:
     app: "{{ .Name }}"
