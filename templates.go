@@ -159,9 +159,9 @@ var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderW
       apiVersions: [{{ QuoteAndJoin .APIVersions ", " }}]
       operations:  [{{ JoinOperations .Operations ", " }}]
     {{- end }}
-  admissionReviewVersions: [{{ QuoteAndJoin .SupportedAdmissionVersions ", " }}]
-  sideEffects: {{ if eq .SideEffects "" }}None{{else}}{{ Quote .SideEffects }}{{end}}
-  timeoutSeconds: {{ .TimeoutInSeconds }}
+  admissionReviewVersions: [{{ QuoteAndJoin .Hook.SupportedAdmissionVersions ", " }}]
+  sideEffects: {{ if eq .Hook.SideEffects "" }}None{{else}}{{ Quote .Hook.SideEffects }}{{end}}
+  timeoutSeconds: {{ .Hook.TimeoutInSeconds }}
 {{- end }}{{/* end of RenderWebhook template */}}---
 apiVersion: apps/v1
 kind: Deployment
