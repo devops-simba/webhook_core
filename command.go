@@ -100,6 +100,16 @@ func ReadCommand(
 	command.BindToFlags(flag.CommandLine)
 	flag.Parse()
 
+	if command.ServiceName == "" {
+		command.ServiceName = command.ApplicationName
+	}
+	if command.SecretName == "" {
+		command.SecretName = command.ApplicationName
+	}
+	if command.ImageName == "" {
+		command.ImageName = command.ApplicationName
+	}
+
 	return command
 }
 
@@ -113,6 +123,7 @@ func (this *CLICommand) GetSupportedCommandNames() []string {
 func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 	supportedCommands := "[" + strings.Join(this.GetSupportedCommandNames(), ", ") + "]"
 
+	flagset.StringVar(&this.ApplicationName, "app", this.ApplicationName, "Name of the application")
 	flagset.IntVar(&this.Port, "port", 0, "Port that server should listen on it")
 	flagset.StringVar(&this.Host, "host", "0.0.0.0", "Host that server should listen on it")
 	flagset.IntVar(&this.LogLevel, "level", 0, "Level of log information")
@@ -122,7 +133,7 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 	flagset.StringVar(&this.PrivateKeyFile, "key", "",
 		"Path to file that contains private key of the server(Used in TLS)")
 	flagset.StringVar(&this.CAFile, "ca", "", "Path to CA that signed certificate of this server")
-	flagset.StringVar(&this.ImageName, "image", this.ApplicationName, "Name of the docker image")
+	flagset.StringVar(&this.ImageName, "image", "", "Name of the docker image")
 	flagset.StringVar(&this.ImageTag, "tag", "latest", "Tag of the docker image")
 	flagset.StringVar(&this.BuildProxy, "proxy", "",
 		"Proxy that we should use to download required go packages when building application")
@@ -132,9 +143,9 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 		"Identifier of the user that application must run under it")
 	flagset.StringVar(&this.Namespace, "namespace", "devops-webhooks",
 		"Namespace that pod must deployed into it")
-	flagset.StringVar(&this.SecretName, "secret-name", this.ApplicationName+"-tls",
+	flagset.StringVar(&this.SecretName, "secret-name", "",
 		"Name of the secret that contains TLS information of the server")
-	flagset.StringVar(&this.ServiceName, "service-name", this.ApplicationName,
+	flagset.StringVar(&this.ServiceName, "service-name", "",
 		"Name of the service that wrap created pod(s)")
 	flagset.StringVar(&this.ScriptFolder, "folder", "deployment-scripts",
 		"Folder that deployment scripts will be created in it")

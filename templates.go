@@ -40,7 +40,7 @@ var (
 				} else {
 					result += sep
 				}
-				result += string(operation)
+				result += Quote(string(operation))
 			}
 			return result
 		},
@@ -159,6 +159,9 @@ var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderW
       apiVersions: [{{ QuoteAndJoin .APIVersions ", " }}]
       operations:  [{{ JoinOperations .Operations ", " }}]
     {{- end }}
+  admissionReviewVersions: [{{ QuoteAndJoin .SupportedAdmissionVersions }}]
+  sideEffects: {{ if eq .SideEffects "" }}None{{else}}{{ Quote .SideEffects }}{{end}}
+  timeoutSeconds: {{ .TimeoutInSeconds }}
 {{- end }}{{/* end of RenderWebhook template */}}---
 apiVersion: apps/v1
 kind: Deployment
@@ -259,9 +262,12 @@ webhooks:
 `)
 
 type WebhookData struct {
-	Name           string
-	Configurations []WebhookConfiguration
-	Rules          []admissionRegistration.RuleWithOperations
+	Name                       string
+	SideEffects                string
+	SupportedAdmissionVersions []string
+	TimeoutInSeconds           int
+	Configurations             []WebhookConfiguration
+	Rules                      []admissionRegistration.RuleWithOperations
 }
 
 type DeploymentData struct {

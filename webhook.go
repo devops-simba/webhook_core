@@ -10,8 +10,13 @@ import (
 type AdmissionWebhookType string
 
 const (
+	DefaultTimeoutInSeconds                         = 5
 	MutatingAdmissionWebhook   AdmissionWebhookType = "mutating"
 	ValidatingAdmissionWebhook AdmissionWebhookType = "validating"
+)
+
+var (
+	SupportedAdmissionVersions = []string{"v1", "v1beta1"}
 )
 
 type WebhookConfiguration struct {
@@ -30,6 +35,12 @@ type AdmissionWebhook interface {
 	Rules() []admissionRegistration.RuleWithOperations
 	// Configurations of this webhook
 	Configurations() []WebhookConfiguration
+	// TimeoutInSeconds timeout of this webhook
+	TimeoutInSeconds() int
+	// SupportedAdmissionVersions admission versions that supported by this webhook
+	SupportedAdmissionVersions() []string
+	// SideEffects side effects of running this webhook
+	SideEffects() admissionRegistration.SideEffectClass
 	// Initialize added an opportunity to initialize before actual running
 	Initialize()
 	// Handler that will be used to process HTTP requests that sent to this plugin
