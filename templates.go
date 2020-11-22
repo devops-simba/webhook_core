@@ -193,7 +193,7 @@ spec:
             - {{ .LogLevel }}
             {{- end }}
             - "--port"
-            - {{ .ContainerPort }}
+            - "{{ .ContainerPort }}"
             {{ if not .Insecure -}}
             - "--cert"
             - "/run/secrets/{{ .Name }}/tls.cert"
