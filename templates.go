@@ -188,9 +188,9 @@ spec:
           args:
             - "/app/webhook_server"
             - "-logtostderr"
-            {{ if (ne .LogLevel 0) -}}
+            {{- if (ne .LogLevel 0) }}
             - "-v"
-            - {{ .LogLevel }}
+            - "{{ .LogLevel }}"
             {{- end }}
             - "--port"
             - "{{ .ContainerPort }}"
