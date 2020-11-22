@@ -101,9 +101,11 @@ func loadOrCreateCert(command *CLICommand, folder string, ca *helpers.CertAndKey
 		}
 	}
 
-	commonName := fmt.Sprintf("%s/%s", command.Namespace, command.ApplicationName)
+	var commonName string
 	if ca == nil {
-		commonName = "CA for " + commonName
+		commonName = fmt.Sprintf("%s.%s.ca", command.ServiceName, command.Namespace)
+	} else {
+		commonName = fmt.Sprintf("%s.%s.svc", command.ServiceName, command.Namespace)
 	}
 
 	created = true

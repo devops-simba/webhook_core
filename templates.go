@@ -143,7 +143,7 @@ func RenderDockerfile(data DockerfileData) (string, error) {
 
 //region deployment.yaml
 var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderWebhook" }}
-- name: {{ .Hook.Name }}
+- name: {{ .Hook.Name }}.{{ .Deployment.ServiceName }}.{{ .Deployment.Namespace }}.svc
   clientConfig:
     service:
       name: "{{ .Deployment.ServiceName }}"
@@ -231,6 +231,8 @@ kind: Service
 metadata:
   name: "{{ .ServiceName }}"
   namespace: "{{ .Namespace }}"
+  labels:
+	app: "{{ .Name }}"
 spec:
   selector:
     app: "{{ .Name }}"
@@ -242,7 +244,7 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: "{{ .Name }}"
+  name: "{{ .ServiceName }}.{{ .Namespace }}.svc"
 webhooks:
   {{- range .MutatingWebhooks }}
     {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "mutate") }}
@@ -253,7 +255,7 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: "{{ .Name }}"
+  name: "{{ .ServiceName }}.{{ .Namespace }}.svc"
 webhooks:
   {{- range .ValidatingWebhooks }}
     {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "validate") }}
