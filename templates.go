@@ -11,27 +11,27 @@ import (
 	admissionRegistration "k8s.io/api/admissionregistration/v1"
 )
 
-func quote(value string) string {
+func Quote(value string) string {
 	return `"` + strings.ReplaceAll(strings.ReplaceAll(value, `\`, `\\`), `"`, `\"`) + `"`
 }
 
 var (
 	funcs = template.FuncMap{
-		"json":  json.Marshal,
-		"join":  strings.Join,
-		"deref": func(value *string) string { return *value },
-		"quote": quote,
-		"quoteAndJoin": func(values []string, sep string) string {
+		"Json":  json.Marshal,
+		"Join":  strings.Join,
+		"Deref": func(value *string) string { return *value },
+		"Quote": Quote,
+		"QuoteAndJoin": func(values []string, sep string) string {
 			builder := &strings.Builder{}
 			for i := 0; i < len(values); i++ {
 				if i != 0 {
 					builder.WriteString(sep)
 				}
-				builder.WriteString(quote(values[i]))
+				builder.WriteString(Quote(values[i]))
 			}
 			return builder.String()
 		},
-		"joinOperations": func(operations []admissionRegistration.OperationType, sep string) string {
+		"JoinOperations": func(operations []admissionRegistration.OperationType, sep string) string {
 			result := ""
 			first := true
 			for _, operation := range operations {
@@ -44,21 +44,21 @@ var (
 			}
 			return result
 		},
-		"joinScope": func(outer, inner interface{}) JoinedScope {
+		"JoinScope": func(outer, inner interface{}) JoinedScope {
 			return JoinedScope{
 				Inner: inner,
 				Outer: outer,
 			}
 		},
-		"dict": func(values ...interface{}) (map[string]interface{}, error) {
+		"MakeDict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values) == 0 {
-				return nil, errors.New("Invalid call to dict")
+				return nil, errors.New("Invalid call to MakeDict")
 			}
 			if (len(values) & 1) == 1 {
-				return nil, errors.New("Invalid number of arguments for dict")
+				return nil, errors.New("Invalid number of arguments for MakeDict")
 			}
 
-			var result map[string]interface{}
+			result := make(map[string]interface{})
 			for i := 0; i < len(values); i += 2 {
 				key, ok := values[i].(string)
 				if !ok {
@@ -69,29 +69,6 @@ var (
 			}
 
 			return result, nil
-		},
-		"backToRoot": func(path string) string {
-			if path == "" {
-				return "."
-			}
-
-			if strings.HasPrefix(path, "./") {
-				path = path[2:]
-			}
-
-			parts := strings.Split(path, "/")
-			if parts[len(parts)-1] == "" {
-				parts = parts[:len(parts)-1]
-			}
-			if len(parts) == 1 {
-				return ".."
-			}
-
-			for i := 0; i < len(parts); i++ {
-				parts[i] = ".."
-			}
-
-			return strings.Join(parts, "/")
 		},
 	}
 )
@@ -186,14 +163,14 @@ var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderW
       namespace: "{{ .Deployment.Namespace }}"
       path: "/{{ .Type }}/{{ .Hook.Name }}"
     {{ if and (not .Deployment.Insecure) (ne 0 (len .Deployment.CABundle)) -}}
-    caBundle: {{ json .Deployment.CABundle }}
+    caBundle: {{ Quote .Deployment.CABundle }}
     {{- end }}
   rules:
     {{ range .Hook.Rules -}}
-    - apiGroups:   [{{ quoteAndJoin .APIGroups ", " }}]
-      resources:   [{{ quoteAndJoin .Resources ", " }}]
-      apiVersions: [{{ quoteAndJoin .APIVersions ", " }}]
-      operations:  [{{ joinOperations .Operations ", " }}]
+    - apiGroups:   [{{ QuoteAndJoin .APIGroups ", " }}]
+      resources:   [{{ QuoteAndJoin .Resources ", " }}]
+      apiVersions: [{{ QuoteAndJoin .APIVersions ", " }}]
+      operations:  [{{ JoinOperations .Operations ", " }}]
     {{- end }}
 {{- end }}{{/* end of RenderWebhook template */}}---
 apiVersion: apps/v1
@@ -230,7 +207,7 @@ spec:
         {{ range .Configurations -}}
         {{ if (ne .DefaultValue nil) -}}
         - name: "{{ .Name }}"
-          value: {{ quote (deref .DefaultValue) }}
+          value: {{ Quote (Deref .DefaultValue) }}
           {{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
         {{- end }}
         {{- end }}
@@ -265,7 +242,7 @@ metadata:
 name: "{{ .Name }}"
 webhooks:
 {{- range .MutatingWebhooks }}
-  {{- template "RenderWebhook" (dict "Deployment" $ "Hook" . "Type" "mutate") }}
+  {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "mutate") }}
 {{- end}}
 {{- end }}
 {{if (ne 0 (len .ValidatingWebhooks)) -}}
@@ -276,7 +253,7 @@ metadata:
 name: "{{ .Name }}"
 webhooks:
 {{- range .ValidatingWebhooks }}
-  {{- template "RenderWebhook" (dict "Deployment" $ "Hook" . "Type" "validate") }}
+  {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "validate") }}
 {{- end }}
 {{- end }}
 `)
