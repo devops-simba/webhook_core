@@ -64,10 +64,10 @@ type CLICommand struct {
 }
 
 func ReadCommand(
-	webhooks []AdmissionWebhook,
 	defaultCommand string,
 	supportedCommands map[string]CommandHandler,
-	dontAddDefaultCommands bool) *CLICommand {
+	dontAddDefaultCommands bool,
+	webhooks ...AdmissionWebhook) *CLICommand {
 	if len(webhooks) == 0 {
 		panic("Missing any webhook")
 	}
