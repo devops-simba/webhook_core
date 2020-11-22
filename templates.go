@@ -230,7 +230,7 @@ spec:
   ports:
     - port: {{ .ServerPort }}
       targetPort: "{{ .Name }}-api"
-  {{if (ne 0 (len .MutatingWebhooks)) -}}
+{{if (ne 0 (len .MutatingWebhooks)) -}}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
