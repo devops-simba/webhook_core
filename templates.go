@@ -206,9 +206,9 @@ spec:
         {{ range .AllHooks -}}
         {{ range .Configurations -}}
         {{ if (ne .DefaultValue nil) -}}
+		{{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
         - name: "{{ .Name }}"
           value: {{ Quote (Deref .DefaultValue) }}
-          {{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
         {{- end }}
         {{- end }}
         {{- end }}
