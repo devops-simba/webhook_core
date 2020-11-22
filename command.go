@@ -120,7 +120,7 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 		"Path to file that contains certificate of the server(Used in TLS)")
 	flagset.StringVar(&this.PrivateKeyFile, "key", "",
 		"Path to file that contains private key of the server(Used in TLS)")
-	flagset.StringVar(&this.ImageName, "ca", "", "Path to CA that signed certificate of this server")
+	flagset.StringVar(&this.CAFile, "ca", "", "Path to CA that signed certificate of this server")
 	flagset.StringVar(&this.ImageName, "image", this.ApplicationName, "Name of the docker image")
 	flagset.StringVar(&this.ImageTag, "tag", "latest", "Tag of the docker image")
 	flagset.StringVar(&this.BuildProxy, "proxy", "",
