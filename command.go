@@ -115,6 +115,7 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 
 	flagset.IntVar(&this.Port, "port", 0, "Port that server should listen on it")
 	flagset.StringVar(&this.Host, "host", "0.0.0.0", "Host that server should listen on it")
+	flagset.IntVar(&this.LogLevel, "level", 0, "Level of log information")
 	flagset.BoolVar(&this.Insecure, "insecure", false, "Should we run this server as an insecure one?")
 	flagset.StringVar(&this.CertificateFile, "cert", "",
 		"Path to file that contains certificate of the server(Used in TLS)")
