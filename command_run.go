@@ -20,13 +20,17 @@ func RunWebhooks(command *CLICommand) error {
 	stopped := make(chan error, 1)
 	if command.CertificateFile != "" {
 		go func() {
-			server.ListenAndServeTLS(command.CertificateFile, command.PrivateKeyFile)
-			close(stopped)
+			log.V(5).Info("Starting https server")
+			err := server.ListenAndServeTLS(command.CertificateFile, command.PrivateKeyFile)
+			log.Infof("Server stopped: %v", err)
+			stopped <- err
 		}()
 	} else {
 		go func() {
-			server.ListenAndServe()
-			close(stopped)
+			log.V(5).Info("Starting http server")
+			err := server.ListenAndServe()
+			log.Infof("Server stopped: %v", err)
+			stopped <- err
 		}()
 	}
 
