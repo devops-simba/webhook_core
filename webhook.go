@@ -14,6 +14,12 @@ const (
 	ValidatingAdmissionWebhook AdmissionWebhookType = "validating"
 )
 
+type WebhookConfiguration struct {
+	Name         string
+	Desc         string
+	DefaultValue *string
+}
+
 // Webhook This interface represent a webhook
 type AdmissionWebhook interface {
 	// Name name of this webhook
@@ -22,6 +28,10 @@ type AdmissionWebhook interface {
 	Type() AdmissionWebhookType
 	// Rules rules that will be applied to this
 	Rules() []admissionRegistration.RuleWithOperations
+	// Configurations of this webhook
+	Configurations() []WebhookConfiguration
+	// Initialize added an opportunity to initialize before actual running
+	Initialize()
 	// Handler that will be used to process HTTP requests that sent to this plugin
 	HandleAdmission(
 		request *http.Request,

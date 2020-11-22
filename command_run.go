@@ -77,10 +77,13 @@ func admissionHandlerFunc(webhook AdmissionWebhook) http.HandlerFunc {
 func createServerHandler(command *CLICommand) (http.Handler, error) {
 	mux := http.NewServeMux()
 	for _, webhook := range command.Webhooks {
+		webhook.Initialize()
+
 		path, err := getWebhookPath(webhook)
 		if err != nil {
 			return nil, err
 		}
+
 		mux.Handle(path, admissionHandlerFunc(webhook))
 	}
 	return mux, nil

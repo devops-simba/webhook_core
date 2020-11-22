@@ -13,8 +13,12 @@ import (
 
 var (
 	funcs = template.FuncMap{
-		"json": json.Marshal,
-		"join": strings.Join,
+		"json":  json.Marshal,
+		"join":  strings.Join,
+		"deref": func(value *string) string { return *value },
+		"quote": func(value string) string {
+			return `"` + strings.ReplaceAll(strings.ReplaceAll(value, `\`, `\\`), `"`, `\"`) + `"`
+		},
 		"joinOperations": func(operations []admissionRegistration.OperationType, sep string) string {
 			result := ""
 			first := true
@@ -111,6 +115,8 @@ RUN {{ if .BuildProxy -}}
 FROM alpine:3.12
 WORKDIR /app
 
+# Set configuration environments
+
 COPY --from=build-env /app/webhook_server /app
 CMD [ "/app/webhook_server", "-logtostderr"
 {{- if (ne .LogLevel 0) -}}
@@ -160,7 +166,7 @@ func RenderDockerfile(data DockerfileData) (string, error) {
 //endregion
 
 //region deployment.yaml
-var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{- define "RenderWebhook" }}
+var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderWebhook" }}
 - name: {{ .Hook.Name }}
   clientConfig:
     service:
@@ -207,6 +213,16 @@ spec:
       ports:
         - containerPort: {{ .ContainerPort }}
           name: "{{ .Name }}-api"
+      env:
+        {{ range .AllHooks -}}
+        {{ range .Configurations -}}
+        {{ if (ne .DefaultValue nil) -}}
+        - name: "{{ .Name }}"
+          value: {{ quote (deref .DefaultValue) }}
+          {{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
   {{- if not .Insecure }}
       volumeMounts:
         - name: "{{ .Name }}-tls-certs"
@@ -273,6 +289,13 @@ type DeploymentData struct {
 	ServiceName        string
 	MutatingWebhooks   []WebhookData
 	ValidatingWebhooks []WebhookData
+}
+
+func (this DeploymentData) AllHooks() []WebhookData {
+	result := make([]WebhookData, 0, len(this.MutatingWebhooks)+len(this.ValidatingWebhooks))
+	result = append(result, this.MutatingWebhooks...)
+	result = append(result, this.ValidatingWebhooks...)
+	return result
 }
 
 func WriteDeployment(w io.Writer, data DeploymentData) error {
