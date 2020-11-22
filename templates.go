@@ -143,7 +143,7 @@ func RenderDockerfile(data DockerfileData) (string, error) {
 
 //region deployment.yaml
 var DeploymentTemplate = MustParseYamlTemplate("deployment", `{{ define "RenderWebhook" }}
-- name: {{ .Hook.Name }}.{{ .Deployment.ServiceName }}.{{ .Deployment.Namespace }}.svc
+- name: "{{ .Hook.Name }}.{{ .Deployment.ServiceName }}.{{ .Deployment.Namespace }}.svc"
   clientConfig:
     service:
       name: "{{ .Deployment.ServiceName }}"
