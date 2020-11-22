@@ -32,7 +32,7 @@ func createScriptsFolder(command *CLICommand) (string, error) {
 		return "", fmt.Errorf("Destination address(%s) is not a folder", command.ScriptFolder)
 	}
 
-	return folder, nil
+	return command.ScriptFolder, nil
 }
 func getDockerfilePath(command *CLICommand) (string, error) {
 	folder, err := createScriptsFolder(command)
@@ -288,6 +288,8 @@ func CreateDeployment(command *CLICommand) error {
 	if err != nil {
 		return err
 	}
+
+	os.Chmod(deployScriptFilePath, 0744)
 
 	return nil
 }
