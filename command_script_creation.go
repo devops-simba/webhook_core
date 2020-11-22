@@ -27,7 +27,7 @@ func createScriptsFolder(command *CLICommand) (string, error) {
 
 	stat, err := os.Stat(folder)
 	if os.IsNotExist(err) {
-		return folder, os.MkdirAll(folder, os.ModePerm)
+		return command.ScriptFolder, os.MkdirAll(folder, os.ModePerm)
 	} else if !stat.IsDir() {
 		return "", fmt.Errorf("Destination address(%s) is not a folder", command.ScriptFolder)
 	}
@@ -84,7 +84,7 @@ func updatePort(command *CLICommand) int {
 }
 func loadOrCreateCert(command *CLICommand, folder string, ca *helpers.CertAndKey, forceCreate bool) (certAndKey *helpers.CertAndKey, created bool, err error) {
 	basename := "ca"
-	if ca == nil {
+	if ca != nil {
 		basename = "srv"
 	}
 
