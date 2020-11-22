@@ -107,19 +107,6 @@ WORKDIR /app
 # Set configuration environments
 
 COPY --from=build-env /app/webhook_server /app
-CMD [ "/app/webhook_server", "-logtostderr"
-{{- if (ne .LogLevel 0) -}}
-  , "-v", "{{ .LogLevel }}"
-{{- end -}}
-{{- if (ne .Port 0) -}}
-  , "--port", "{{ .Port }}"
-{{- end -}}
-{{- if .Insecure -}}
-  , "--insecure"
-{{- else -}}
-    , "--cert", "{{ .CertificateFile }}", "--key", "{{ .PrivateKeyFile }}"
-{{- end -}}
-]
 `)
 
 type DockerfileData struct {
@@ -198,6 +185,23 @@ spec:
       containers:
         - name: "server"
           image: "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
+          args:
+            - "/app/webhook_server"
+            - "-logtostderr"
+            {{ if (ne .LogLevel 0) -}}
+            - "-v"
+            - {{ .LogLevel }}
+            {{- end }}
+            - "--port"
+            - {{ .ContainerPort }}
+            {{ if not .Insecure -}}
+            - "--cert"
+            - "/run/secrets/{{ .Name }}/tls.cert"
+            - "--key"
+            - "/run/secrets/{{ .Name }}/tls.key"
+            {{ else }}
+            - "--insecure"
+            {{- end }}
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .ContainerPort }}
@@ -264,6 +268,7 @@ type DeploymentData struct {
 	Name               string
 	Namespace          string
 	RunAsUser          int
+	LogLevel           int
 	ImageRegistry      string
 	ImageName          string
 	ImageTag           string

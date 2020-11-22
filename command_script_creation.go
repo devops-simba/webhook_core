@@ -240,6 +240,7 @@ func CreateDeployment(command *CLICommand) error {
 		Name:          command.ApplicationName,
 		Namespace:     command.Namespace,
 		RunAsUser:     command.RunAsUser,
+		LogLevel:      command.LogLevel,
 		ImageRegistry: command.ImageRegistry,
 		ImageName:     command.ImageName,
 		ImageTag:      command.ImageTag,
