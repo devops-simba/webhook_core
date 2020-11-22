@@ -253,8 +253,9 @@ func CreateDeployment(command *CLICommand) error {
 
 	for _, hook := range command.Webhooks {
 		data := WebhookData{
-			Name:  hook.Name(),
-			Rules: hook.Rules(),
+			Name:           hook.Name(),
+			Rules:          hook.Rules(),
+			Configurations: hook.Configurations(),
 		}
 		if hook.Type() == MutatingAdmissionWebhook {
 			deploymentData.MutatingWebhooks = append(deploymentData.MutatingWebhooks, data)

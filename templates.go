@@ -282,8 +282,9 @@ webhooks:
 `)
 
 type WebhookData struct {
-	Name  string
-	Rules []admissionRegistration.RuleWithOperations
+	Name           string
+	Configurations []WebhookConfiguration
+	Rules          []admissionRegistration.RuleWithOperations
 }
 
 type DeploymentData struct {
