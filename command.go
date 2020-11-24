@@ -48,10 +48,14 @@ type CLICommand struct {
 	SecretName string
 	// ServiceName name of the service that should handle this webhook
 	ServiceName string
+	// ServiceUser user of the service
+	ServiceUser string
 	// Command command that must executed by the program
 	Command string
 	// Folder that deployment scripts should added to it
 	ScriptFolder string
+	// Kubectl command that should used in place of kubectl
+	Kubectl string
 
 	// ApplicationName name of this application
 	ApplicationName string
@@ -146,10 +150,12 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 		"Namespace that pod must deployed into it")
 	flagset.StringVar(&this.SecretName, "secret-name", "",
 		"Name of the secret that contains TLS information of the server")
-	flagset.StringVar(&this.ServiceName, "service-name", "",
-		"Name of the service that wrap created pod(s)")
+	flagset.StringVar(&this.ServiceName, "service-name", "", "Name of the service that wrap created pod(s)")
+	flagset.StringVar(&this.ServiceUser, "service-user", "", "User that should used for the service")
 	flagset.StringVar(&this.ScriptFolder, "folder", "deployment-scripts",
 		"Folder that deployment scripts will be created in it")
+	flagset.StringVar(&this.Kubectl, "kubectl", "kubectl",
+		"Application that should used to communicate with kubenetes")
 	flagset.StringVar(&this.Command, "command", this.DefaultCommand,
 		"Command that must executed in current execution. Available commands are: "+supportedCommands)
 }

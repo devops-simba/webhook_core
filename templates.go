@@ -234,6 +234,7 @@ metadata:
   labels:
     app: "{{ .Name }}"
 spec:
+  {{ if .ServiceUser }}serviceAccountName: {{ .ServiceUser }}{{ end }}
   selector:
     app: "{{ .Name }}"
   ports:
@@ -286,6 +287,7 @@ type DeploymentData struct {
 	CABundle           string
 	TlsSecretName      string
 	ServiceName        string
+	ServiceUser        string
 	MutatingWebhooks   []WebhookData
 	ValidatingWebhooks []WebhookData
 }
@@ -324,9 +326,9 @@ func RenderDeployment(data DeploymentData) (string, error) {
 var DeployScriptTemplate = MustParseTemplate("deploy", `#!/usr/bin/env sh
 
 {{ if not .Insecure }}
-if ! kubectl get -n "{{ .Namespace }}" secrets/{{ .TlsSecretName }}; then
+if ! {{ .Kubectl }} get -n "{{ .Namespace }}" secrets/{{ .TlsSecretName }}; then
   echo "Creating TLS secret"
-  kubectl -n "{{ .Namespace }}" create secret tls "{{ .TlsSecretName }}" \
+  {{ .Kubectl }} -n "{{ .Namespace }}" create secret tls "{{ .TlsSecretName }}" \
     --cert "{{ .CertificateFile }}" --key "{{ .PrivateKeyFile }}"
 fi
 {{ end }}{{/* if not .Insecure */}}
@@ -339,7 +341,7 @@ echo "Pushing docker image to the registry"
 docker push "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
 
 echo "Deploy the deployment to the kubernetes"
-kubectl apply -f "{{ .DeploymentFolder }}/deployment.yml"
+{{ .Kubectl }} apply -f "{{ .DeploymentFolder }}/deployment.yml"
 `)
 
 type DeployScriptData struct {
@@ -352,6 +354,7 @@ type DeployScriptData struct {
 	ImageRegistry    string
 	ImageName        string
 	ImageTag         string
+	Kubectl          string
 }
 
 func WriteDeployScript(w io.Writer, data DeployScriptData) error {

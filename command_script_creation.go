@@ -252,6 +252,7 @@ func CreateDeployment(command *CLICommand) error {
 		CABundle:      caBundle,
 		TlsSecretName: command.SecretName,
 		ServiceName:   command.ServiceName,
+		ServiceUser:   command.ServiceUser,
 	}
 
 	for _, hook := range command.Webhooks {
@@ -287,6 +288,7 @@ func CreateDeployment(command *CLICommand) error {
 		ImageRegistry:    command.ImageRegistry,
 		ImageName:        command.ImageName,
 		ImageTag:         command.ImageTag,
+		Kubectl:          command.Kubectl,
 	}
 
 	deployScriptFilePath := "deploy.sh"
