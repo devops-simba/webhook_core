@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/devops-simba/helpers"
 
@@ -154,11 +155,14 @@ func ReadAdmissionReview(request *http.Request) (string, *admissionApi.Admission
 			return "", nil, err
 		}
 		body = data
-	}
-
-	if log.V(8) {
-		bodyString := string(body)
-		log.Infof("Request body: %v", bodyString)
+		if log.V(10) {
+			contentType := request.Header["Content-Type"][0]
+			if strings.HasPrefix(contentType, "text/") || contentType == "application/json" {
+				log.Infof("Body: %s", string(data))
+			} else {
+				log.Infof("Body: %x", data)
+			}
+		}
 	}
 
 	if len(body) == 0 {
