@@ -55,6 +55,11 @@ type PatchOperation struct {
 	Value interface{} `json:"value,omitempty"`
 }
 
+func (this PatchOperation) String() string {
+	buffer, _ := json.Marshal(this)
+	return string(buffer)
+}
+
 // KeyValue create a map[string]string with a single entry
 func KeyValue(key string, value string) map[string]string {
 	return map[string]string{
@@ -91,10 +96,11 @@ func NewRemovePatch(path string) PatchOperation {
 func updateItems(current map[string]string, added map[string]string, path string) []PatchOperation {
 	var patches []PatchOperation
 	for key, value := range added {
+		itemPath := path + "/" + key
 		if current == nil || current[key] == "" {
-			patches = append(patches, NewAddPatch(path, KeyValue(key, value)))
+			patches = append(patches, NewAddPatch(itemPath, value))
 		} else {
-			patches = append(patches, NewReplacePatch(path+key, value))
+			patches = append(patches, NewReplacePatch(itemPath, value))
 		}
 	}
 	return patches
