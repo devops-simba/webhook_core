@@ -1,0 +1,21 @@
+#+gotmpl:Name "DeployScript"
+#+gotmpl:DataType "DeployScriptData"
+#!/usr/bin/env sh
+
+{{ if not .Insecure }}
+if ! {{ .Kubectl }} get -n "{{ .Namespace }}" secrets/{{ .TlsSecretName }}; then
+  echo "Creating TLS secret"
+  {{ .Kubectl }} -n "{{ .Namespace }}" create secret tls "{{ .TlsSecretName }}" \
+    --cert "{{ .CertificateFile }}" --key "{{ .PrivateKeyFile }}"
+fi
+{{ end }}{{/* if not .Insecure */}}
+
+echo "Creating docker image"
+docker build -t "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}" \
+  -f "{{ .DeploymentFolder }}/Dockerfile" .
+
+echo "Pushing docker image to the registry"
+docker push "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
+
+echo "Deploy the deployment to the kubernetes"
+{{ .Kubectl }} apply -f "{{ .DeploymentFolder }}/deployment.yml"

@@ -1,0 +1,14 @@
+#+gotmpl:Name "Dockerfile"
+#+gotmpl:DataType "DockerfileData"
+FROM golang:alpine3.12 AS build-env
+WORKDIR /app
+
+COPY . /app
+
+RUN {{if .BuildProxy}}export HTTP_PROXY="{{.BuildProxy}}"; export HTTPS_PROXY="{{.BuildProxy}}";{{end}} go build -o webhook_server
+
+# Copy built application to actual image
+FROM alpine:3.12
+WORKDIR /app
+
+COPY --from=build-env /app/webhook_server /app

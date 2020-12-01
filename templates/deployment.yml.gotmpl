@@ -1,0 +1,122 @@
+#+gotmpl:Name "Deployment"
+#+gotmpl:DataType "DeploymentData"
+{{ define "RenderWebhook" }}
+- name: "{{ .Hook.Name }}.{{ .Deployment.ServiceName }}.{{ .Deployment.Namespace }}.svc"
+  clientConfig:
+    service:
+      name: "{{ .Deployment.ServiceName }}"
+      namespace: "{{ .Deployment.Namespace }}"
+      path: "/{{ .Type }}/{{ .Hook.Name }}"
+    {{ if and (not .Deployment.Insecure) (ne 0 (len .Deployment.CABundle)) -}}
+    caBundle: {{ Quote .Deployment.CABundle }}
+    {{- end }}
+  rules:
+    {{ range .Hook.Rules -}}
+    - apiGroups:   [{{ QuoteAndJoin .APIGroups `, ` }}]
+      resources:   [{{ QuoteAndJoin .Resources `, ` }}]
+      apiVersions: [{{ QuoteAndJoin .APIVersions `, ` }}]
+      operations:  [{{ JoinOperations .Operations `, ` }}]
+    {{- end }}
+  admissionReviewVersions: [{{ QuoteAndJoin .Hook.SupportedAdmissionVersions `, ` }}]
+  sideEffects: {{ if eq .Hook.SideEffects `` }}None{{else}}{{ Quote .Hook.SideEffects }}{{end}}
+  timeoutSeconds: {{ .Hook.TimeoutInSeconds }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Name }}"
+  namespace: "{{ .Namespace }}"
+  labels:
+    app: "{{ .Name }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ .Name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Name }}"
+    spec:
+      {{ if (ne .RunAsUser 0) -}}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: {{ .RunAsUser }}
+      {{ end -}}
+      containers:
+        - name: "server"
+          image: "{{ if .ImageRegistry }}{{ .ImageRegistry }}/{{ end }}{{ .ImageName }}:{{ .ImageTag }}"
+          args:
+            - "/app/webhook_server"
+            - "-logtostderr"
+            {{- if (ne .LogLevel 0) }}
+            - "-v"
+            - "{{ .LogLevel }}"
+            {{- end }}
+            - "--port"
+            - "{{ .ContainerPort }}"
+            {{ if not .Insecure -}}
+            - "--cert"
+            - "/run/secrets/{{ .Name }}/tls.crt"
+            - "--key"
+            - "/run/secrets/{{ .Name }}/tls.key"
+            {{ else }}
+            - "--insecure"
+            {{- end }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .ContainerPort }}
+              name: "{{ .Name }}-api"
+          env:
+            {{ if (ne .Desc "") }}# {{ .Desc }}{{ end }}
+            {{ range .AllHooks }}{{ range .Configurations }}{{ if (ne .DefaultValue nil) -}}
+            - name: "{{ .Name }}"
+              value: {{ Quote (Deref .DefaultValue) }}
+            {{ end }}{{ end }}{{ end }}
+      {{- if not .Insecure }}
+          volumeMounts:
+            - name: "{{ .Name }}-tls-certs"
+              mountPath: "/run/secrets/{{ .Name }}"
+              readOnly: true
+      volumes:
+        - name: "{{ .Name }}-tls-certs"
+          secret:
+            secretName: "{{ .TlsSecretName }}"
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .ServiceName }}"
+  namespace: "{{ .Namespace }}"
+  labels:
+    app: "{{ .Name }}"
+spec:
+  {{ if .ServiceUser }}serviceAccountName: {{ .ServiceUser }}{{ end }}
+  selector:
+    app: "{{ .Name }}"
+  ports:
+    - port: {{ .ServerPort }}
+      targetPort: "{{ .Name }}-api"
+{{if (ne 0 (len .MutatingWebhooks)) -}}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: "{{ .ServiceName }}.{{ .Namespace }}.svc"
+webhooks:
+  {{- range .MutatingWebhooks }}
+    {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "mutate") }}
+  {{- end}}
+{{- end }}
+{{if (ne 0 (len .ValidatingWebhooks)) -}}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: "{{ .ServiceName }}.{{ .Namespace }}.svc"
+webhooks:
+  {{- range .ValidatingWebhooks }}
+    {{- template "RenderWebhook" (MakeDict "Deployment" $ "Hook" . "Type" "validate") }}
+  {{- end }}
+{{- end }}
