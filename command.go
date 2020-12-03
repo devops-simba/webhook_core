@@ -38,8 +38,10 @@ type CLICommand struct {
 	ImageName string
 	// ImageTag tag of the deployed image
 	ImageTag string
-	// ImageRegistry registry that image should pushed to it, default is default registry of the system
-	ImageRegistry string
+	// PushImageRegistry registry that image should pushed to it, default is default registry of the system
+	PushImageRegistry string
+	// PullImageRegistry registry that image should pulled from it, default is default registry of the system
+	PullImageRegistry string
 	// RunAsUser identifier of the
 	RunAsUser int
 	// Kubernetes namespace that pod should deployed to it
@@ -142,8 +144,10 @@ func (this *CLICommand) BindToFlags(flagset *flag.FlagSet) {
 	flagset.StringVar(&this.ImageTag, "tag", "latest", "Tag of the docker image")
 	flagset.StringVar(&this.BuildProxy, "proxy", "",
 		"Proxy that we should use to download required go packages when building application")
-	flagset.StringVar(&this.ImageRegistry, "registry", "",
+	flagset.StringVar(&this.PushImageRegistry, "push-registry", "",
 		"Registry that image must pushed to it, if it is default just pass an empty string")
+	flagset.StringVar(&this.PullImageRegistry, "pull-registry", "",
+		"Registry that image must pulled from it, if it is default just pass an empty string")
 	flagset.IntVar(&this.RunAsUser, "runas", 1234,
 		"Identifier of the user that application must run under it")
 	flagset.StringVar(&this.Namespace, "namespace", "devops-webhooks",
