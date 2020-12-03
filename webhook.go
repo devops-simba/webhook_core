@@ -25,6 +25,14 @@ type WebhookConfiguration struct {
 	DefaultValue *string
 }
 
+func CreateConfig(name, defaultValue, desc string) WebhookConfiguration {
+	return WebhookConfiguration{
+		Name:         name,
+		DefaultValue: &defaultValue,
+		Desc:         desc,
+	}
+}
+
 // Webhook This interface represent a webhook
 type AdmissionWebhook interface {
 	// Name name of this webhook
