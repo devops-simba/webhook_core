@@ -3,6 +3,7 @@ package webhook_core
 import (
 	"encoding/json"
 
+	log "github.com/golang/glog"
 	admissionApi "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -124,6 +125,7 @@ func CreatePatchResponse(patches []PatchOperation) (*admissionApi.AdmissionRespo
 			return nil, err
 		}
 
+		log.Infof("Converting %v to JSONPatch", string(patchBytes))
 		return &admissionApi.AdmissionResponse{
 			Allowed:   true,
 			Patch:     patchBytes,
